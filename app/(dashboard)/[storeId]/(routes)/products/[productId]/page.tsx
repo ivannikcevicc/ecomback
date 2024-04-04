@@ -1,20 +1,25 @@
 import prismadb from "@/lib/prismadb";
-
+var checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
 import { ProductForm } from "./components/product-form";
 
 const ProductPage = async ({
-  params
+  params,
 }: {
-  params: { productId: string, storeId: string }
+  params: { productId: string; storeId: string };
 }) => {
-  const product = await prismadb.product.findUnique({
-    where: {
-      id: params.productId,
-    },
-    include: {
-      images: true,
-    }
-  });
+  let product;
+  if (checkForHexRegExp.test(params.productId)) {
+    product = await prismadb.product.findUnique({
+      where: {
+        id: params.productId,
+      },
+      include: {
+        images: true,
+      },
+    });
+  } else {
+    product = null;
+  }
 
   const categories = await prismadb.category.findMany({
     where: {
@@ -34,11 +39,11 @@ const ProductPage = async ({
     },
   });
 
-  return ( 
+  return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <ProductForm 
-          categories={categories} 
+        <ProductForm
+          categories={categories}
           colors={colors}
           sizes={sizes}
           initialData={product}
@@ -46,6 +51,6 @@ const ProductPage = async ({
       </div>
     </div>
   );
-}
+};
 
 export default ProductPage;
